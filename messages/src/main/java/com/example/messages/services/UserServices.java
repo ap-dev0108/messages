@@ -5,6 +5,7 @@ import com.example.messages.entity.User;
 import com.example.messages.exception.ConflictException;
 import com.example.messages.mapper.UserMapper;
 import com.example.messages.repository.UserRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -12,13 +13,16 @@ public class UserServices {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
 
     public UserServices(
             UserRepository userRepository,
-            UserMapper userMapper
+            UserMapper userMapper,
+            PasswordEncoder passwordEncoder
     ) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public User register(UserRegistrationDTO dto) {
@@ -31,8 +35,10 @@ public class UserServices {
             throw new ConflictException("Email already exists");
         }
 
+        String hashedPassword = passwordEncoder.encode(dto.getPassword());
         User user = userMapper.toEntity(dto);
-
+        
+        user.setPassword(hashedPassword);
         return userRepository.save(user);
     }
 }
