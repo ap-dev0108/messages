@@ -1,4 +1,9 @@
 package com.example.messages.repository;
 
-public class MessageRepository {
+import com.example.messages.entity.Message;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.UUID;
+
+public interface MessageRepository extends JpaRepository<Message, UUID> {
 }
