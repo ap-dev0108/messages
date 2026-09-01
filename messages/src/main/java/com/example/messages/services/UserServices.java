@@ -2,6 +2,7 @@ package com.example.messages.services;
 
 import com.example.messages.dto.auth.UserRegistrationDTO;
 import com.example.messages.entity.User;
+import com.example.messages.exception.ConflictException;
 import com.example.messages.mapper.UserMapper;
 import com.example.messages.repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -23,11 +24,11 @@ public class UserServices {
     public User register(UserRegistrationDTO dto) {
 
         if (userRepository.existsByUsername(dto.getUsername())) {
-            throw new RuntimeException("Username already exists");
+            throw new ConflictException("Username already exists");
         }
 
         if (userRepository.existsByEmail(dto.getEmail())) {
-            throw new RuntimeException("Email already exists");
+            throw new ConflictException("Email already exists");
         }
 
         User user = userMapper.toEntity(dto);
