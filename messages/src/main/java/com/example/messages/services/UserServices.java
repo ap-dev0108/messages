@@ -22,6 +22,14 @@ public class UserServices {
 
     public User register(UserRegistrationDTO dto) {
 
+        if (userRepository.existsByUsername(dto.getUsername())) {
+            throw new RuntimeException("Username already exists");
+        }
+
+        if (userRepository.existsByEmail(dto.getEmail())) {
+            throw new RuntimeException("Email already exists");
+        }
+
         User user = userMapper.toEntity(dto);
 
         return userRepository.save(user);
