@@ -1,6 +1,7 @@
 package com.example.messages.mapper;
 
 import com.example.messages.dto.auth.UserRegistrationDTO;
+import com.example.messages.dto.user.UserResponseDTO;
 import com.example.messages.entity.User;
 import org.springframework.stereotype.Component;
 
@@ -17,5 +18,17 @@ public class UserMapper {
         user.setCreatedAt(dto.getCreateAt());
 
         return user;
+    }
+
+    public UserResponseDTO toResponseDTO(User user) {
+
+        UserResponseDTO dto = new UserResponseDTO();
+
+        dto.setId(user.getId());
+        dto.setUsername(user.getUsername());
+        dto.setEmail(user.getEmail());
+        dto.setCreatedAt(user.getCreatedAt());
+
+        return dto;
     }
 }
