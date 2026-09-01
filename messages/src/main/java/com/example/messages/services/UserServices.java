@@ -37,7 +37,8 @@ public class UserServices {
 
         String hashedPassword = passwordEncoder.encode(dto.getPassword());
         User user = userMapper.toEntity(dto);
-        
+
+
         user.setPassword(hashedPassword);
         return userRepository.save(user);
     }
