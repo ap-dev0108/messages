@@ -10,36 +10,4 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class UserServices {
-
-    private final UserRepository userRepository;
-    private final UserMapper userMapper;
-    private final PasswordEncoder passwordEncoder;
-
-    public UserServices(
-            UserRepository userRepository,
-            UserMapper userMapper,
-            PasswordEncoder passwordEncoder
-    ) {
-        this.userRepository = userRepository;
-        this.userMapper = userMapper;
-        this.passwordEncoder = passwordEncoder;
-    }
-
-    public User register(UserRegistrationDTO dto) {
-
-        if (userRepository.existsByUsername(dto.getUsername())) {
-            throw new ConflictException("Username already exists");
-        }
-
-        if (userRepository.existsByEmail(dto.getEmail())) {
-            throw new ConflictException("Email already exists");
-        }
-
-        String hashedPassword = passwordEncoder.encode(dto.getPassword());
-        User user = userMapper.toEntity(dto);
-
-
-        user.setPassword(hashedPassword);
-        return userRepository.save(user);
-    }
 }
