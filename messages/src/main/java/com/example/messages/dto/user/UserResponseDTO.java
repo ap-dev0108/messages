@@ -1,5 +1,7 @@
 package com.example.messages.dto.user;
 
+import com.example.messages.entity.Roles;
+
 import java.time.Instant;
 import java.util.UUID;
 
@@ -9,6 +11,7 @@ public class UserResponseDTO {
     private String username;
     private String email;
     private Instant createdAt;
+    private Roles userRole;
 
     public UserResponseDTO() {
     }
@@ -43,5 +46,13 @@ public class UserResponseDTO {
 
     public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public Roles getUserRole() {
+        return userRole;
+    }
+
+    public void setUserRole(Roles role) {
+        this.userRole = role;
     }
 }

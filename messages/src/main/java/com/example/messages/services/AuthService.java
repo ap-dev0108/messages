@@ -3,6 +3,7 @@ package com.example.messages.services;
 import com.example.messages.dto.auth.UserLoginDTO;
 import com.example.messages.dto.auth.UserRegistrationDTO;
 import com.example.messages.dto.user.UserResponseDTO;
+import com.example.messages.entity.Roles;
 import com.example.messages.entity.User;
 import com.example.messages.exception.ConflictException;
 import com.example.messages.exception.InvalidCredentialsException;
@@ -43,7 +44,7 @@ public class AuthService {
         user.setPassword(
                 passwordEncoder.encode(dto.getPassword())
         );
-
+        user.setUserRole(Roles.USER);
         User savedUser = userRepository.save(user);
 
         return userMapper.toResponseDTO(savedUser);

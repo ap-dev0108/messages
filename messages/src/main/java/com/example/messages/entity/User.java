@@ -23,6 +23,10 @@ public class User {
     @Column(nullable = false)
     private String password;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Roles userRole;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -68,5 +72,11 @@ public class User {
 
     public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
+    }
+    public Roles getRoles() {
+        return userRole;
+    }
+    public void setUserRole(Roles role) {
+        this.userRole = role;
     }
 }
