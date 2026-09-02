@@ -1,5 +1,6 @@
 package com.example.messages.controller;
 
+import com.example.messages.dto.auth.LoginResponseDTO;
 import com.example.messages.dto.auth.UserLoginDTO;
 import com.example.messages.dto.auth.UserRegistrationDTO;
 import com.example.messages.dto.user.UserResponseDTO;
@@ -30,10 +31,10 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<UserResponseDTO> login(
+    public ResponseEntity<LoginResponseDTO> login(
             @RequestBody UserLoginDTO dto
     ) {
-        UserResponseDTO response = authService.login(dto);
+        LoginResponseDTO response = authService.login(dto);
 
         return ResponseEntity.ok(response);
     }
