@@ -1,5 +1,6 @@
 package com.example.messages.services;
 
+import com.example.messages.dto.auth.LoginResponseDTO;
 import com.example.messages.dto.auth.UserLoginDTO;
 import com.example.messages.dto.auth.UserRegistrationDTO;
 import com.example.messages.dto.user.UserResponseDTO;
@@ -9,6 +10,7 @@ import com.example.messages.exception.ConflictException;
 import com.example.messages.exception.InvalidCredentialsException;
 import com.example.messages.mapper.UserMapper;
 import com.example.messages.repository.UserRepository;
+import com.example.messages.security.JwtService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -18,15 +20,18 @@ public class AuthService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
     public AuthService(
             UserRepository userRepository,
             UserMapper userMapper,
-            PasswordEncoder passwordEncoder
+            PasswordEncoder passwordEncoder,
+            JwtService jwtService
     ) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
     }
 
     public UserResponseDTO register(UserRegistrationDTO dto) {
@@ -50,7 +55,7 @@ public class AuthService {
         return userMapper.toResponseDTO(savedUser);
     }
 
-    public UserResponseDTO login(UserLoginDTO dto) {
+    public LoginResponseDTO login(UserLoginDTO dto) {
 
         User user = userRepository
                 .findByEmail(dto.getEmail())
@@ -69,6 +74,10 @@ public class AuthService {
             );
         }
 
-        return userMapper.toResponseDTO(user);
+        String token = jwtService.generateAccessToken(user.getId(), user.getRoles().name());
+
+        UserResponseDTO userResponse = userMapper.toResponseDTO(user);
+
+        return new LoginResponseDTO(token, userResponse);
     }
 }
