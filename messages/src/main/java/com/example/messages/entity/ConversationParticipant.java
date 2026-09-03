@@ -5,7 +5,14 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Entity
-@Table(name = "conversation_participants")
+@Table(
+        name = "conversation_participants",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        columnNames = {"conversation_id", "user_id"}
+                )
+        }
+    )
 public class ConversationParticipant {
 
     @Id
@@ -20,8 +27,13 @@ public class ConversationParticipant {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(nullable = false)
+    @Column(nullable = false, updatable = false)
     private Instant joinedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        joinedAt = Instant.now();
+    }
 
 
     // Getters and Setters

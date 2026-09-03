@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DataSourcePerFileMappings">
+    <file url="file://$PROJECT_DIR$/messages/src/main/resources/db/migrations/V1__add_participant_unique_constraint.sql" value="d2d7e43c-e90f-4230-8737-0bf948ac35d4" />
+  </component>
+</project>
