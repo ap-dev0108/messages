@@ -12,9 +12,17 @@ public class Conversation {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ConversationType type;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = Instant.now();
+    }
 
     // Getters and Setters
 
@@ -32,5 +40,13 @@ public class Conversation {
 
     public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public ConversationType getType() {
+        return type;
+    }
+
+    public void setType(ConversationType conversationType) {
+        this.type = conversationType;
     }
 }
