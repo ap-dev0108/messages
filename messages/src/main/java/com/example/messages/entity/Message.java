@@ -23,8 +23,13 @@ public class Message {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
-    @Column(nullable = false)
+    @Column(nullable = false, updatable = false)
     private Instant createdAt;
+
+    @PrePersist
+    protected void OnCreate() {
+        createdAt = Instant.now();
+    }
 
 
     // Getters and Setters
