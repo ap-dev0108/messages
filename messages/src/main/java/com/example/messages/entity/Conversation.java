@@ -16,7 +16,7 @@ public class Conversation {
     private Instant createdAt;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "conversation_type",nullable = false)
     private ConversationType type;
 
     @PrePersist
