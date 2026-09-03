@@ -43,4 +43,15 @@ public class JwtService {
                 .signWith(secretKey)
                 .compact();
     }
+
+    public UUID extractUserId(String token) {
+        String subject = Jwts.parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .getSubject();
+
+        return UUID.fromString(subject);
+    }
 }
