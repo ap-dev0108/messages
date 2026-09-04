@@ -6,6 +6,7 @@ import com.example.messages.entity.User;
 import com.example.messages.exception.ResourceNotFoundException;
 import com.example.messages.mapper.UserMapper;
 import com.example.messages.repository.UserRepository;
+import org.jspecify.annotations.NonNull;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import java.util.UUID;
@@ -21,10 +22,11 @@ public class UserServices {
     }
 
     public UserResponseDTO getMyProfile(
-            Authentication authentication
+            @NonNull Authentication authentication
     ) {
 
         UUID userId = (UUID) authentication.getPrincipal();
+        System.out.println("Got the following ID: " + userId);
 
         User user = userRepository
                 .findById(userId)
