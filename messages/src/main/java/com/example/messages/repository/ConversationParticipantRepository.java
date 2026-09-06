@@ -24,4 +24,15 @@ public interface ConversationParticipantRepository
             @Param("userIds") List<UUID> userIds
     );
     List<ConversationParticipant> findByUserId(UUID userId);
+
+    @Query("""
+    SELECT COUNT(cp) > 0
+    FROM ConversationParticipant cp
+    WHERE cp.conversation.id = :conversationId
+      AND cp.user.id = :userId
+""")
+    boolean existsByConversationIdAndUserId(
+            @Param("conversationId") UUID conversationId,
+            @Param("userId") UUID userId
+    );
 }
