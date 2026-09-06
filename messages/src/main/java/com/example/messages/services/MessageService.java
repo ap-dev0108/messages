@@ -1,0 +1,95 @@
+package com.example.messages.services;
+
+import com.example.messages.dto.message.CreateMessageDTO;
+import com.example.messages.dto.message.MessageResponseDTO;
+import com.example.messages.entity.Conversation;
+import com.example.messages.entity.Message;
+import com.example.messages.entity.User;
+import com.example.messages.exception.ResourceNotFoundException;
+import com.example.messages.repository.ConversationParticipantRepository;
+import com.example.messages.repository.ConversationRepository;
+import com.example.messages.repository.MessageRepository;
+import com.example.messages.repository.UserRepository;
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.UUID;
+
+@Service
+public class MessageService {
+
+    private final MessageRepository messageRepository;
+    private final ConversationRepository conversationRepository;
+    private final ConversationParticipantRepository conversationParticipantRepository;
+    private final UserRepository userRepository;
+
+    public MessageService(
+            MessageRepository messageRepository,
+            ConversationRepository conversationRepository,
+            ConversationParticipantRepository conversationParticipantRepository,
+            UserRepository userRepository
+    ) {
+        this.messageRepository = messageRepository;
+        this.conversationRepository = conversationRepository;
+        this.conversationParticipantRepository = conversationParticipantRepository;
+        this.userRepository = userRepository;
+    }
+
+    @Transactional
+    public MessageResponseDTO createMessage(
+            CreateMessageDTO request,
+            Authentication authentication
+    ) {
+
+        UUID userId = (UUID) authentication.getPrincipal();
+
+        Conversation conversation = conversationRepository
+                .findById(request.getConversationId())
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Conversation not found")
+                );
+
+        boolean isParticipant =
+                conversationParticipantRepository
+                        .existsByConversationIdAndUserId(
+                                conversation.getId(),
+                                userId
+                        );
+
+        if (!isParticipant) {
+            throw new IllegalStateException(
+                    "You are not a participant in this conversation"
+            );
+        }
+
+        User sender = userRepository
+                .findById(userId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("User not found")
+                );
+
+        Message message = new Message();
+
+        message.setConversation(conversation);
+        message.setSender(sender);
+        message.setContent(request.getContent());
+
+        Message savedMessage = messageRepository.save(message);
+
+        return toResponseDTO(savedMessage);
+    }
+
+    private MessageResponseDTO toResponseDTO(Message message) {
+
+        MessageResponseDTO response = new MessageResponseDTO();
+
+        response.setId(message.getId());
+        response.setConversationId(message.getConversation().getId());
+        response.setSenderId(message.getSender().getId());
+        response.setContent(message.getContent());
+        response.setCreatedAt(message.getCreatedAt());
+
+        return response;
+    }
+}
