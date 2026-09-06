@@ -92,4 +92,8 @@ public class ConversationService {
 
         return savedConversation;
     }
+
+    public List<Conversation> getConversation() {
+        return conversationRepository.findAll();
+    }
 }

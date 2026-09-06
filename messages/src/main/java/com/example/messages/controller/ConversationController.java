@@ -8,6 +8,8 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/conversations")
 public class ConversationController {
@@ -22,5 +24,11 @@ public class ConversationController {
     @SecurityRequirement(name = "bearerAuth")
     public Conversation createConversation(@Valid @RequestBody CreateConversationDTO request) {
         return conversationService.createConversation(request.getType(), request.getParticipantIds());
+    }
+
+    @GetMapping("/getAllConvo")
+    @ResponseStatus(HttpStatus.FOUND)
+    public List<Conversation> getConversation() {
+        return conversationService.getConversation();
     }
 }
