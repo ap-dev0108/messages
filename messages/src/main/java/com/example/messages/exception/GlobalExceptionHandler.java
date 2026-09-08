@@ -34,4 +34,9 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.UNAUTHORIZED)
                 .body(exception.getMessage());
     }
+
+    @ExceptionHandler(IllegalException.class)
+    public ResponseEntity<String> handleIllegalException(IllegalException exception) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(exception.getMessage());
+    }
 }
