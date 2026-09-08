@@ -1,11 +1,13 @@
 package com.example.messages.controller;
 
+import com.example.messages.dto.Response;
 import com.example.messages.dto.conversation.CreateConversationDTO;
 import com.example.messages.entity.Conversation;
 import com.example.messages.services.ConversationService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,7 +22,6 @@ public class ConversationController {
     }
 
     @PostMapping("/talk")
-    @ResponseStatus(HttpStatus.CREATED)
     @SecurityRequirement(name = "bearerAuth")
     public Conversation createConversation(@Valid @RequestBody CreateConversationDTO request) {
         return conversationService.createConversation(request.getType(), request.getParticipantIds());
@@ -28,7 +29,8 @@ public class ConversationController {
 
     @GetMapping("/getAllConvo")
     @ResponseStatus(HttpStatus.FOUND)
-    public List<Conversation> getConversation() {
-        return conversationService.getConversation();
+    public ResponseEntity<List<Conversation>> getConversation() {
+        var conversationList = conversationService.getConversation();
+        return ResponseEntity.status(HttpStatus.OK).body(conversationList);
     }
 }
