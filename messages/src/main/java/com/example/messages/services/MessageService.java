@@ -5,6 +5,7 @@ import com.example.messages.dto.message.MessageResponseDTO;
 import com.example.messages.entity.Conversation;
 import com.example.messages.entity.Message;
 import com.example.messages.entity.User;
+import com.example.messages.exception.ForbiddenException;
 import com.example.messages.exception.ResourceNotFoundException;
 import com.example.messages.mapper.MessageMapper;
 import com.example.messages.repository.ConversationParticipantRepository;
@@ -15,6 +16,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -82,5 +84,35 @@ public class MessageService {
         Message savedMessage = messageRepository.save(message);
 
         return messageMapper.toResponseDTO(savedMessage);
+    }
+
+    public List<MessageResponseDTO> getMessages(
+            UUID conversationId,
+            Authentication authentication
+    ) {
+        UUID userId = (UUID) authentication.getPrincipal();
+
+        boolean isParticipant =
+                conversationParticipantRepository
+                        .existsByConversationIdAndUserId(
+                                conversationId,
+                                userId
+                        );
+
+        if (!isParticipant) {
+            throw new ForbiddenException(
+                    "You are not a participant in this conversation"
+            );
+        }
+
+        List<Message> messages =
+                messageRepository
+                        .findByConversationIdOrderByCreatedAtAsc(
+                                conversationId
+                        );
+
+        return messages.stream()
+                .map(messageMapper::toResponseDTO)
+                .toList();
     }
 }
