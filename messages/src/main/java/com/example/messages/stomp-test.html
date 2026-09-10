@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>STOMP Test</title>
+</head>
+<body>
+
+<h2>WebSocket STOMP Test</h2>
+
+<br><br>
+
+<label>
+    Conversation ID:
+    <input
+            type="text"
+            id="conversationId"
+            placeholder="Conversation UUID"
+            style="width: 350px;"
+    >
+</label>
+
+<br><br>
+
+<button onclick="connect()">Connect</button>
+<button onclick="sendMessage()">Send Message</button>
+
+<pre id="output"></pre>
+
+<script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.2.1/bundles/stomp.umd.min.js"></script>
+
+<script>
+    let client = null;
+    let connected = false;
+
+    function log(message) {
+        document.getElementById("output").textContent +=
+            message + "\n\n";
+    }
+
+    function getToken() {
+
+        const token =
+            document.getElementById("token").value.trim();
+
+        if (!token) {
+            log("ERROR: JWT token is required.");
+            return null;
+        }
+
+        const parts = token.split(".");
+
+        if (parts.length !== 3) {
+            log("ERROR: Invalid JWT format.");
+            return null;
+        }
+
+        return token;
+    }
+
+    function getConversationId() {
+
+        const conversationId =
+            document.getElementById("conversationId").value.trim();
+
+        if (!conversationId) {
+            log("ERROR: Conversation ID is required.");
+            return null;
+        }
+
+        return conversationId;
+    }
+
+    function connect() {
+
+        const token = getToken();
+
+        if (!token) {
+            return;
+        }
+
+        const conversationId = getConversationId();
+
+        if (!conversationId) {
+            return;
+        }
+
+        client = new StompJs.Client({
+
+            brokerURL: 'ws://localhost:8080/ws',
+
+            connectHeaders: {
+                Authorization: `Bearer ${token}`
+            },
+
+            debug: function (str) {
+                console.log(str);
+            },
+
+            onConnect: function () {
+
+                connected = true;
+
+                log("CONNECTED!");
+
+                client.subscribe(
+                    `/topic/conversations/${conversationId}`,
+                    function (message) {
+
+                        log("RECEIVED:");
+                        log(message.body);
+                    }
+                );
+
+                document.getElementById("sendButton").disabled = false;
+            },
+
+            onStompError: function (frame) {
+
+                connected = false;
+
+                log("STOMP ERROR:");
+                log(frame.headers["message"] || "Unknown STOMP error");
+                log(frame.body || "");
+
+                document.getElementById("sendButton").disabled = true;
+            },
+
+            onWebSocketError: function () {
+
+                connected = false;
+
+                log("ERROR: WebSocket connection failed.");
+
+                document.getElementById("sendButton").disabled = true;
+            },
+
+            onWebSocketClose: function () {
+
+                connected = false;
+
+                log("WebSocket connection closed.");
+
+                document.getElementById("sendButton").disabled = true;
+            }
+        });
+
+        client.activate();
+    }
+
+    function sendMessage() {
+
+        if (!connected) {
+            log("ERROR: Not connected to WebSocket.");
+            return;
+        }
+
+        const conversationId = getConversationId();
+
+        if (!conversationId) {
+            return;
+        }
+
+        client.publish({
+
+            destination: '/app/chat',
+
+            body: JSON.stringify({
+                conversationId: conversationId,
+                content: 'Hello through WebSocket!'
+            })
+        });
+    }
+</script>
+
+</body>
+</html>
