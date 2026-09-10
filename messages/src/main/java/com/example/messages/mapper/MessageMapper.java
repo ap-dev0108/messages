@@ -2,7 +2,9 @@ package com.example.messages.mapper;
 
 import com.example.messages.dto.message.MessageResponseDTO;
 import com.example.messages.entity.Message;
+import org.springframework.stereotype.Component;
 
+@Component
 public class MessageMapper {
     public MessageResponseDTO toResponseDTO(Message message) {
 
