@@ -2,6 +2,7 @@ package com.example.messages.services;
 
 import com.example.messages.dto.message.CreateMessageDTO;
 import com.example.messages.dto.message.MessageResponseDTO;
+import com.example.messages.dto.message.SendMessageDTO;
 import com.example.messages.entity.Conversation;
 import com.example.messages.entity.Message;
 import com.example.messages.entity.User;
@@ -16,6 +17,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.UUID;
 
@@ -42,16 +44,27 @@ public class MessageService {
         this.messageMapper = messageMapper;
     }
 
-    @Transactional
+    // 1. REST entry point — PUBLIC
     public MessageResponseDTO createMessage(
             CreateMessageDTO request,
             Authentication authentication
     ) {
-
         UUID userId = (UUID) authentication.getPrincipal();
 
+        return createMessage(
+                request.getConversationId(),
+                request.getContent(),
+                userId
+        );
+    }
+
+    @Transactional
+    private MessageResponseDTO createMessage(
+            UUID conversationId, String content, UUID userId
+    ) {
+
         Conversation conversation = conversationRepository
-                .findById(request.getConversationId())
+                .findById(conversationId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Conversation not found")
                 );
@@ -79,7 +92,7 @@ public class MessageService {
 
         message.setConversation(conversation);
         message.setSender(sender);
-        message.setContent(request.getContent());
+        message.setContent(content);
 
         Message savedMessage = messageRepository.save(message);
 
