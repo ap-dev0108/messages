@@ -51,15 +51,27 @@ public class MessageService {
     ) {
         UUID userId = (UUID) authentication.getPrincipal();
 
-        return createMessage(
+        return saveMessage(
                 request.getConversationId(),
                 request.getContent(),
                 userId
         );
     }
 
-    @Transactional
-    private MessageResponseDTO createMessage(
+    public MessageResponseDTO createMessageFromWebSocket(
+            SendMessageDTO request,
+            Principal principal
+    ) {
+        UUID userId = UUID.fromString(principal.getName());
+
+        return saveMessage(
+                request.getConversationId(),
+                request.getContent(),
+                userId
+        );
+    }
+
+    private MessageResponseDTO saveMessage(
             UUID conversationId, String content, UUID userId
     ) {
 
