@@ -1,68 +1,96 @@
+```html
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>STOMP Test</title>
 </head>
+
 <body>
 
 <h2>WebSocket STOMP Test</h2>
 
-<br><br>
+<br>
 
-<label>
+<label for="conversationId">
     Conversation ID:
-    <input
-            type="text"
-            id="conversationId"
-            placeholder="Conversation UUID"
-            style="width: 350px;"
-    >
 </label>
 
+<input
+        type="text"
+        id="conversationId"
+        placeholder="Conversation UUID"
+        style="width: 350px;"
+        value="e0e662fd-f234-46e0-877d-7f50e5a5ba96"
+>
+
 <br><br>
 
-<button onclick="connect()">Connect</button>
-<button onclick="sendMessage()">Send Message</button>
+<button id="connectButton" onclick="connect()">
+    Connect
+</button>
+
+<button
+        id="sendButton"
+        onclick="sendMessage()"
+        disabled
+>
+    Send Message
+</button>
+
+<br><br>
 
 <pre id="output"></pre>
 
 <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.2.1/bundles/stomp.umd.min.js"></script>
 
 <script>
+
     let client = null;
     let connected = false;
 
+    const token =
+        "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxNTg1MDE2MS02YmY0LTRmZjMtYWUyYy01NTMzMWZlMzlkYmEiLCJyb2xlIjoiVVNFUiIsImlhdCI6MTc4OTE0MzA3MSwiZXhwIjoxNzg5MTQzOTcxfQ.LiT-tERpxiQcZggYfsqlbPYMKzrMryybpFwH9XK4l9wuh92geytFKEXXigFNvjMpRDy2zgUDbO2CKblVHTKa2Q";
+
+
     function log(message) {
-        document.getElementById("output").textContent +=
-            message + "\n\n";
-    }
 
-    function getToken() {
+        const output = document.getElementById("output");
 
-        const token =
-            document.getElementById("token").value.trim();
-
-        if (!token) {
-            log("ERROR: JWT token is required.");
-            return null;
+        if (!output) {
+            return;
         }
 
-        const parts = token.split(".");
-
-        if (parts.length !== 3) {
-            log("ERROR: Invalid JWT format.");
-            return null;
+        if (message === null || message === undefined) {
+            message = "null / undefined";
         }
 
-        return token;
+        output.textContent += String(message) + "\n\n";
     }
+
 
     function getConversationId() {
 
-        const conversationId =
-            document.getElementById("conversationId").value.trim();
+        const input =
+            document.getElementById("conversationId");
 
-        if (!conversationId) {
+        if (!input) {
+            log("ERROR: Conversation ID input was not found.");
+            return null;
+        }
+
+        const value = input.value;
+
+        if (value === null || value === undefined) {
+            log("ERROR: Conversation ID is null or undefined.");
+            return null;
+        }
+
+        const conversationId = String(value).trim();
+
+        if (conversationId.length === 0) {
             log("ERROR: Conversation ID is required.");
             return null;
         }
@@ -70,107 +98,424 @@
         return conversationId;
     }
 
-    function connect() {
 
-        const token = getToken();
+    function setSendButtonState(enabled) {
 
-        if (!token) {
+        const sendButton =
+            document.getElementById("sendButton");
+
+        if (!sendButton) {
             return;
         }
+
+        sendButton.disabled = !enabled;
+    }
+
+
+    function setConnectButtonState(enabled) {
+
+        const connectButton =
+            document.getElementById("connectButton");
+
+        if (!connectButton) {
+            return;
+        }
+
+        connectButton.disabled = !enabled;
+    }
+
+
+    function connect() {
+
+        if (connected) {
+            log("Already connected.");
+            return;
+        }
+
+        if (client !== null && client !== undefined) {
+
+            log("A WebSocket client already exists.");
+
+            return;
+        }
+
+        if (
+            token === null ||
+            token === undefined ||
+            String(token).trim().length === 0
+        ) {
+            log("ERROR: JWT token is missing.");
+            return;
+        }
+
 
         const conversationId = getConversationId();
 
-        if (!conversationId) {
+        if (
+            conversationId === null ||
+            conversationId === undefined
+        ) {
             return;
         }
 
-        client = new StompJs.Client({
 
-            brokerURL: 'ws://localhost:8080/ws',
+        if (
+            typeof StompJs === "undefined" ||
+            StompJs === null
+        ) {
+            log("ERROR: STOMP library was not loaded.");
+            return;
+        }
 
-            connectHeaders: {
-                Authorization: `Bearer ${token}`
-            },
 
-            debug: function (str) {
-                console.log(str);
-            },
+        if (
+            typeof StompJs.Client !== "function"
+        ) {
+            log("ERROR: STOMP Client is unavailable.");
+            return;
+        }
 
-            onConnect: function () {
 
-                connected = true;
+        setConnectButtonState(false);
 
-                log("CONNECTED!");
+        log("Connecting...");
 
-                client.subscribe(
-                    `/topic/conversations/${conversationId}`,
-                    function (message) {
 
-                        log("RECEIVED:");
-                        log(message.body);
+        try {
+
+            client = new StompJs.Client({
+
+                brokerURL: "ws://localhost:8080/ws",
+
+                connectHeaders: {
+                    Authorization: `Bearer ${String(token).trim()}`
+                },
+
+                debug: function (message) {
+
+                    if (
+                        message !== null &&
+                        message !== undefined
+                    ) {
+                        console.log(message);
                     }
+                },
+
+
+                onConnect: function () {
+
+                    connected = true;
+
+                    log("CONNECTED!");
+
+                    const destination =
+                        `/topic/conversations/${conversationId}`;
+
+
+                    try {
+
+                        if (
+                            client === null ||
+                            client === undefined
+                        ) {
+                            log(
+                                "ERROR: STOMP client is null after connection."
+                            );
+
+                            connected = false;
+                            return;
+                        }
+
+
+                        client.subscribe(
+                            destination,
+                            function (message) {
+
+                                log("RECEIVED:");
+
+                                if (
+                                    message === null ||
+                                    message === undefined
+                                ) {
+                                    log("null / undefined message");
+                                    return;
+                                }
+
+
+                                const body =
+                                    message.body;
+
+                                if (
+                                    body === null ||
+                                    body === undefined
+                                ) {
+                                    log("Message body is empty.");
+                                    return;
+                                }
+
+
+                                log(body);
+                            }
+                        );
+
+
+                        log(
+                            "SUBSCRIBED: " +
+                            destination
+                        );
+
+                        setSendButtonState(true);
+
+                    } catch (error) {
+
+                        connected = false;
+
+                        log(
+                            "ERROR: Failed to subscribe."
+                        );
+
+                        log(
+                            error instanceof Error
+                                ? error.message
+                                : String(error ?? "Unknown error")
+                        );
+
+                        setSendButtonState(false);
+                    }
+                },
+
+
+                onStompError: function (frame) {
+
+                    connected = false;
+
+                    log("STOMP ERROR:");
+
+                    if (
+                        frame === null ||
+                        frame === undefined
+                    ) {
+                        log("No STOMP error frame received.");
+                    } else {
+
+                        const headers =
+                            frame.headers;
+
+                        if (
+                            headers !== null &&
+                            headers !== undefined
+                        ) {
+
+                            const errorMessage =
+                                headers["message"];
+
+                            log(
+                                errorMessage ??
+                                "Unknown STOMP error"
+                            );
+
+                        } else {
+
+                            log("No STOMP error headers.");
+                        }
+
+
+                        const body =
+                            frame.body;
+
+                        if (
+                            body !== null &&
+                            body !== undefined &&
+                            String(body).length > 0
+                        ) {
+                            log(body);
+                        }
+                    }
+
+
+                    setSendButtonState(false);
+                    setConnectButtonState(true);
+                },
+
+
+                onWebSocketError: function (event) {
+
+                    connected = false;
+
+                    log(
+                        "ERROR: WebSocket connection failed."
+                    );
+
+
+                    if (
+                        event !== null &&
+                        event !== undefined
+                    ) {
+                        console.error(event);
+                    }
+
+
+                    setSendButtonState(false);
+                    setConnectButtonState(true);
+                },
+
+
+                onWebSocketClose: function (event) {
+
+                    connected = false;
+
+                    log(
+                        "WebSocket connection closed."
+                    );
+
+
+                    if (
+                        event !== null &&
+                        event !== undefined
+                    ) {
+                        console.log(event);
+                    }
+
+
+                    setSendButtonState(false);
+                    setConnectButtonState(true);
+
+                    client = null;
+                }
+
+            });
+
+
+            if (
+                client === null ||
+                client === undefined
+            ) {
+                throw new Error(
+                    "STOMP client could not be created."
                 );
-
-                document.getElementById("sendButton").disabled = false;
-            },
-
-            onStompError: function (frame) {
-
-                connected = false;
-
-                log("STOMP ERROR:");
-                log(frame.headers["message"] || "Unknown STOMP error");
-                log(frame.body || "");
-
-                document.getElementById("sendButton").disabled = true;
-            },
-
-            onWebSocketError: function () {
-
-                connected = false;
-
-                log("ERROR: WebSocket connection failed.");
-
-                document.getElementById("sendButton").disabled = true;
-            },
-
-            onWebSocketClose: function () {
-
-                connected = false;
-
-                log("WebSocket connection closed.");
-
-                document.getElementById("sendButton").disabled = true;
             }
-        });
 
-        client.activate();
+
+            client.activate();
+
+        } catch (error) {
+
+            connected = false;
+            client = null;
+
+            log(
+                "ERROR: Failed to initialize WebSocket."
+            );
+
+            log(
+                error instanceof Error
+                    ? error.message
+                    : String(error ?? "Unknown error")
+            );
+
+            setSendButtonState(false);
+            setConnectButtonState(true);
+        }
     }
+
 
     function sendMessage() {
 
         if (!connected) {
-            log("ERROR: Not connected to WebSocket.");
+
+            log(
+                "ERROR: Not connected to WebSocket."
+            );
+
             return;
         }
 
-        const conversationId = getConversationId();
 
-        if (!conversationId) {
+        if (
+            client === null ||
+            client === undefined
+        ) {
+
+            log(
+                "ERROR: STOMP client is unavailable."
+            );
+
+            connected = false;
+
+            setSendButtonState(false);
+            setConnectButtonState(true);
+
             return;
         }
 
-        client.publish({
 
-            destination: '/app/chat',
+        const conversationId =
+            getConversationId();
 
-            body: JSON.stringify({
-                conversationId: conversationId,
-                content: 'Hello through WebSocket!'
-            })
-        });
+
+        if (
+            conversationId === null ||
+            conversationId === undefined
+        ) {
+            return;
+        }
+
+
+        const content =
+            "Hello through WebSocket!";
+
+
+        if (
+            content === null ||
+            content === undefined ||
+            String(content).trim().length === 0
+        ) {
+
+            log(
+                "ERROR: Message content is empty."
+            );
+
+            return;
+        }
+
+
+        try {
+
+            client.publish({
+
+                destination: "/app/chat",
+
+                body: JSON.stringify({
+
+                    conversationId:
+                    conversationId,
+
+                    content:
+                        String(content)
+
+                })
+
+            });
+
+
+            log("MESSAGE SENT.");
+
+        } catch (error) {
+
+            log(
+                "ERROR: Failed to send message."
+            );
+
+            log(
+                error instanceof Error
+                    ? error.message
+                    : String(error ?? "Unknown error")
+            );
+        }
     }
+
 </script>
 
 </body>
 </html>
+```

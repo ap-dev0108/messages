@@ -1,5 +1,6 @@
 package com.example.messages.services;
 
+import com.example.messages.dto.conversation.ConversationResponseDTO;
 import com.example.messages.entity.Conversation;
 import com.example.messages.entity.ConversationParticipant;
 import com.example.messages.entity.ConversationType;
@@ -7,6 +8,7 @@ import com.example.messages.entity.User;
 import com.example.messages.exception.IllegalException;
 import com.example.messages.repository.ConversationParticipantRepository;
 import com.example.messages.repository.ConversationRepository;
+import com.example.messages.repository.MessageRepository;
 import com.example.messages.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
@@ -20,15 +22,18 @@ public class ConversationService {
     private final ConversationRepository conversationRepository;
     private final ConversationParticipantRepository conversationParticipantRepository;
     private final UserRepository userRepository;
+    private final MessageRepository messageRepository;
 
     public ConversationService(
             ConversationRepository conversationRepository,
             ConversationParticipantRepository conversationParticipantRepository,
-            UserRepository userRepository
+            UserRepository userRepository,
+            MessageRepository messageRepository
     ) {
         this.conversationRepository = conversationRepository;
         this.conversationParticipantRepository = conversationParticipantRepository;
         this.userRepository = userRepository;
+        this.messageRepository = messageRepository;
     }
 
     @Transactional
@@ -100,7 +105,17 @@ public class ConversationService {
         return savedConversation;
     }
 
-    public List<Conversation> getConversation() {
-        return conversationRepository.findAll();
+    public List<ConversationResponseDTO> getConversation() {
+        List<Conversation> conversations = conversationRepository.findAll();
+
+        return conversations.stream().map(conversation -> {
+            ConversationResponseDTO response = new ConversationResponseDTO();
+
+            response.setConversationId(conversation.getId());
+            response.setType(conversation.getType());
+            response.setCreatedAt(conversation.getCreatedAt());
+
+            return response;
+        });
     }
 }

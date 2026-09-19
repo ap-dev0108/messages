@@ -10,14 +10,13 @@ public class ConversationResponseDTO {
     private UUID conversationId;
     private ConversationType type;
     private Instant createdAt;
-
     private MessageResponseDTO lastMessage;
 
-    public ConversationResponseDTO(UUID id, ConversationType type, Instant createdAt, MessageResponseDTO lastMessage) {
+    public ConversationResponseDTO(UUID id, ConversationType type, Instant createdAt, MessageResponseDTO message) {
         this.conversationId = id;
         this.type = type;
         this.createdAt = createdAt;
-        this.lastMessage = lastMessage;
+        this.lastMessage = message;
     }
 
     public UUID getConversationId() {
