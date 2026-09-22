@@ -13,6 +13,7 @@ import com.example.messages.repository.ConversationRepository;
 import com.example.messages.repository.MessageRepository;
 import com.example.messages.repository.UserRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -110,8 +111,10 @@ public class ConversationService {
         return savedConversation;
     }
 
-    public List<ConversationResponseDTO> getConversation() {
-        List<Conversation> conversations = conversationRepository.findAll();
+    public List<ConversationResponseDTO> getConversation(Authentication authentication) {
+        UUID userId = (UUID) authentication.getPrincipal();
+
+        List<Conversation> conversations = conversationParticipantRepository.findConversationsByUserId(userId);
 
         return conversations.stream()
                 .map(conversation -> {
