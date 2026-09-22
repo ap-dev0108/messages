@@ -35,4 +35,14 @@ public interface ConversationParticipantRepository
             @Param("conversationId") UUID conversationId,
             @Param("userId") UUID userId
     );
+
+    @Query("""
+    SELECT cp.conversation
+    FROM ConversationParticipant cp
+    WHERE cp.user.id = :userId
+    ORDER BY cp.conversation.createdAt DESC
+""")
+    List<Conversation> findConversationsByUserId(
+            @Param("userId") UUID userId
+    );
 }
