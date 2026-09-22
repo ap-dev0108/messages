@@ -1,11 +1,13 @@
 package com.example.messages.services;
 
 import com.example.messages.dto.conversation.ConversationResponseDTO;
+import com.example.messages.dto.message.MessageResponseDTO;
 import com.example.messages.entity.Conversation;
 import com.example.messages.entity.ConversationParticipant;
 import com.example.messages.entity.ConversationType;
 import com.example.messages.entity.User;
 import com.example.messages.exception.IllegalException;
+import com.example.messages.mapper.MessageMapper;
 import com.example.messages.repository.ConversationParticipantRepository;
 import com.example.messages.repository.ConversationRepository;
 import com.example.messages.repository.MessageRepository;
@@ -23,17 +25,20 @@ public class ConversationService {
     private final ConversationParticipantRepository conversationParticipantRepository;
     private final UserRepository userRepository;
     private final MessageRepository messageRepository;
+    private final MessageMapper messageMapper;
 
     public ConversationService(
             ConversationRepository conversationRepository,
             ConversationParticipantRepository conversationParticipantRepository,
             UserRepository userRepository,
-            MessageRepository messageRepository
+            MessageRepository messageRepository,
+            MessageMapper messageMapper
     ) {
         this.conversationRepository = conversationRepository;
         this.conversationParticipantRepository = conversationParticipantRepository;
         this.userRepository = userRepository;
         this.messageRepository = messageRepository;
+        this.messageMapper = messageMapper;
     }
 
     @Transactional
@@ -108,14 +113,24 @@ public class ConversationService {
     public List<ConversationResponseDTO> getConversation() {
         List<Conversation> conversations = conversationRepository.findAll();
 
-        return conversations.stream().map(conversation -> {
-            ConversationResponseDTO response = new ConversationResponseDTO();
+        return conversations.stream()
+                .map(conversation -> {
 
-            response.setConversationId(conversation.getId());
-            response.setType(conversation.getType());
-            response.setCreatedAt(conversation.getCreatedAt());
+                    MessageResponseDTO lastMessage =
+                            messageRepository
+                                    .findFirstByConversationIdOrderByCreatedAtDesc(
+                                            conversation.getId()
+                                    )
+                                    .map(messageMapper::toResponseDTO)
+                                    .orElse(null);
 
-            return response;
-        });
+                    return new ConversationResponseDTO(
+                            conversation.getId(),
+                            conversation.getType(),
+                            conversation.getCreatedAt(),
+                            lastMessage
+                    );
+                })
+                .toList();
     }
 }
