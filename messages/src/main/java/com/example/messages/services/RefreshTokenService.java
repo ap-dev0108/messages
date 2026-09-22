@@ -73,4 +73,20 @@ public class RefreshTokenService {
 
         refreshTokenRepository.save(refreshToken);
     }
+
+    public void revokeByToken(String token) {
+
+        RefreshToken refreshToken =
+                refreshTokenRepository
+                        .findByToken(token)
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "Invalid refresh token"
+                                )
+                        );
+
+        refreshToken.setRevoked(true);
+
+        refreshTokenRepository.save(refreshToken);
+    }
 }
