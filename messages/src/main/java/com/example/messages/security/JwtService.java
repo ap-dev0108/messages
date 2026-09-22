@@ -54,4 +54,14 @@ public class JwtService {
 
         return UUID.fromString(subject);
     }
+
+    public String extractRole(String token) {
+
+        return Jwts.parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .get("role", String.class);
+    }
 }
