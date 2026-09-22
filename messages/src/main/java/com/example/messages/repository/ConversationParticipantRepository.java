@@ -39,8 +39,11 @@ public interface ConversationParticipantRepository
     @Query("""
     SELECT cp.conversation
     FROM ConversationParticipant cp
+    LEFT JOIN Message m
+        ON m.conversation = cp.conversation
     WHERE cp.user.id = :userId
-    ORDER BY cp.conversation.createdAt DESC
+    GROUP BY cp.conversation
+    ORDER BY MAX(m.createdAt) DESC NULLS LAST
 """)
     List<Conversation> findConversationsByUserId(
             @Param("userId") UUID userId
