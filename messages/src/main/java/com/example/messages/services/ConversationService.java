@@ -2,6 +2,7 @@ package com.example.messages.services;
 
 import com.example.messages.dto.conversation.ConversationResponseDTO;
 import com.example.messages.dto.message.MessageResponseDTO;
+import com.example.messages.dto.user.OtherUserResponseDTO;
 import com.example.messages.entity.Conversation;
 import com.example.messages.entity.ConversationParticipant;
 import com.example.messages.entity.ConversationType;
@@ -13,6 +14,7 @@ import com.example.messages.repository.ConversationRepository;
 import com.example.messages.repository.MessageRepository;
 import com.example.messages.repository.UserRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -110,8 +112,10 @@ public class ConversationService {
         return savedConversation;
     }
 
-    public List<ConversationResponseDTO> getConversation() {
-        List<Conversation> conversations = conversationRepository.findAll();
+    public List<ConversationResponseDTO> getConversation(Authentication authentication) {
+        UUID userId = (UUID) authentication.getPrincipal();
+
+        List<Conversation> conversations = conversationParticipantRepository.findConversationsByUserId(userId);
 
         return conversations.stream()
                 .map(conversation -> {
@@ -124,11 +128,24 @@ public class ConversationService {
                                     .map(messageMapper::toResponseDTO)
                                     .orElse(null);
 
+                    OtherUserResponseDTO otherUser = null;
+
+                    if (conversation.getType() == ConversationType.DIRECT) {
+                        otherUser = conversationParticipantRepository.findByConversationId(conversation.getId()).
+                                stream().map(ConversationParticipant::getUser).filter(user ->
+                                        !user.getId().equals(userId)
+                                ).findFirst().map(user -> new OtherUserResponseDTO(
+                                        user.getId(),
+                                        user.getUsername()
+                                )).orElse(null);
+                    }
+
                     return new ConversationResponseDTO(
                             conversation.getId(),
                             conversation.getType(),
                             conversation.getCreatedAt(),
-                            lastMessage
+                            lastMessage,
+                            otherUser
                     );
                 })
                 .toList();

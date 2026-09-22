@@ -1,9 +1,11 @@
 package com.example.messages.services;
 
 import com.example.messages.dto.auth.LoginResponseDTO;
+import com.example.messages.dto.auth.RefreshTokenResponseDTO;
 import com.example.messages.dto.auth.UserLoginDTO;
 import com.example.messages.dto.auth.UserRegistrationDTO;
 import com.example.messages.dto.user.UserResponseDTO;
+import com.example.messages.entity.RefreshToken;
 import com.example.messages.entity.Roles;
 import com.example.messages.entity.User;
 import com.example.messages.exception.ConflictException;
@@ -21,17 +23,20 @@ public class AuthService {
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final RefreshTokenService refreshTokenService;
 
     public AuthService(
             UserRepository userRepository,
             UserMapper userMapper,
             PasswordEncoder passwordEncoder,
-            JwtService jwtService
+            JwtService jwtService,
+            RefreshTokenService refreshTokenService
     ) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
+        this.refreshTokenService = refreshTokenService;
     }
 
     public UserResponseDTO register(UserRegistrationDTO dto) {
@@ -76,8 +81,36 @@ public class AuthService {
 
         String token = jwtService.generateAccessToken(user.getId(), user.getRoles().name());
 
+        RefreshToken refreshToken = refreshTokenService.create(user);
+
         UserResponseDTO userResponse = userMapper.toResponseDTO(user);
 
-        return new LoginResponseDTO(token, userResponse);
+        return new LoginResponseDTO(token, refreshToken.getToken(), userResponse);
+    }
+
+    public RefreshTokenResponseDTO refreshAccessToken(
+            String token
+    ) {
+
+        RefreshToken refreshToken =
+                refreshTokenService.validate(token);
+
+        User user = refreshToken.getUser();
+
+        String accessToken =
+                jwtService.generateAccessToken(
+                        user.getId(),
+                        user.getRoles().name()
+                );
+
+        RefreshToken newRefreshToken =
+                refreshTokenService.create(user);
+
+        refreshTokenService.revoke(refreshToken);
+
+        return new RefreshTokenResponseDTO(
+                accessToken,
+                newRefreshToken.getToken()
+        );
     }
 }

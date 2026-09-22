@@ -35,4 +35,19 @@ public interface ConversationParticipantRepository
             @Param("conversationId") UUID conversationId,
             @Param("userId") UUID userId
     );
+
+    @Query("""
+    SELECT cp.conversation
+    FROM ConversationParticipant cp
+    LEFT JOIN Message m
+        ON m.conversation = cp.conversation
+    WHERE cp.user.id = :userId
+    GROUP BY cp.conversation
+    ORDER BY MAX(m.createdAt) DESC NULLS LAST
+""")
+    List<Conversation> findConversationsByUserId(
+            @Param("userId") UUID userId
+    );
+
+    List<ConversationParticipant> findByConversationId(UUID conversationId);
 }

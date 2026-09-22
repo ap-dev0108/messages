@@ -63,7 +63,13 @@ public class JwtChannelInterceptor implements ChannelInterceptor {
                 );
             }
 
-            UUID userId = UUID.fromString(principal.getName());
+            UUID userId;
+
+            try {
+                userId = UUID.fromString(principal.getName());
+            } catch (IllegalArgumentException exception) {
+                throw new ForbiddenException("Invalid user");
+            }
 
             String destination = stompHeaderAccessor.getDestination();
 
@@ -97,6 +103,27 @@ public class JwtChannelInterceptor implements ChannelInterceptor {
             if (!isParticipant) {
                 throw new ForbiddenException(
                         "You are not a participant in this conversation"
+                );
+            }
+        }
+
+        if (StompCommand.SEND.equals(stompHeaderAccessor.getCommand())) {
+
+            Principal principal = stompHeaderAccessor.getUser();
+
+            if (principal == null) {
+                throw new ForbiddenException(
+                        "User is not authenticated"
+                );
+            }
+
+            String destination =
+                    stompHeaderAccessor.getDestination();
+
+            if (!"/app/chat".equals(destination)) {
+
+                throw new IllegalArgumentException(
+                        "Invalid message destination"
                 );
             }
         }
