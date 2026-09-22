@@ -1,6 +1,7 @@
 package com.example.messages.dto.conversation;
 
 import com.example.messages.dto.message.MessageResponseDTO;
+import com.example.messages.dto.user.OtherUserResponseDTO;
 import com.example.messages.entity.Conversation;
 import com.example.messages.entity.ConversationType;
 
@@ -12,12 +13,20 @@ public class ConversationResponseDTO {
     private ConversationType type;
     private Instant createdAt;
     private MessageResponseDTO lastMessage;
+    private OtherUserResponseDTO otherUser;
 
-    public ConversationResponseDTO(UUID id, ConversationType type, Instant createdAt, MessageResponseDTO lastMessage) {
+    public ConversationResponseDTO(
+            UUID id,
+            ConversationType type,
+            Instant createdAt,
+            MessageResponseDTO lastMessage,
+            OtherUserResponseDTO otherUser
+    ) {
         this.conversationId = id;
         this.type = type;
         this.createdAt = createdAt;
         this.lastMessage = lastMessage;
+        this.otherUser = otherUser;
     }
 
     public UUID getConversationId() {
@@ -48,4 +57,8 @@ public class ConversationResponseDTO {
         this.lastMessage = lastMessage;
     }
 
+    public OtherUserResponseDTO getOtherUser() {
+        return this.otherUser;
+    }
+    
 }
