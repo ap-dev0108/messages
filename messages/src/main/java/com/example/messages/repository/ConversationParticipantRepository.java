@@ -45,4 +45,6 @@ public interface ConversationParticipantRepository
     List<Conversation> findConversationsByUserId(
             @Param("userId") UUID userId
     );
+
+    List<ConversationParticipant> findByConversationId(UUID conversationId);
 }
