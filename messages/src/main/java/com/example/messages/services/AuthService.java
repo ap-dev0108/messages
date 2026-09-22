@@ -113,4 +113,9 @@ public class AuthService {
                 newRefreshToken.getToken()
         );
     }
+
+    public void logout(String token) {
+
+        refreshTokenService.revokeByToken(token);
+    }
 }
