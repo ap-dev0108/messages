@@ -66,4 +66,11 @@ public class RefreshTokenService {
 
         return refreshToken;
     }
+
+    public void revoke(RefreshToken refreshToken) {
+
+        refreshToken.setRevoked(true);
+
+        refreshTokenRepository.save(refreshToken);
+    }
 }
