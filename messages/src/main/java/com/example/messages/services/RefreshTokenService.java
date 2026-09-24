@@ -4,9 +4,11 @@ import com.example.messages.entity.RefreshToken;
 import com.example.messages.entity.User;
 import com.example.messages.repository.RefreshTokenRepository;
 import com.example.messages.security.JwtService;
+import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 
+@Service
 public class RefreshTokenService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtService jwtService;
