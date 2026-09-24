@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DataSourcePerFileMappings">
+    <file url="file://$PROJECT_DIR$/messages/src/main/resources/db/migration/V3_create_refresh_tokens.sql" value="d2d7e43c-e90f-4230-8737-0bf948ac35d4" />
+    <file url="file://$PROJECT_DIR$/messages/src/main/resources/db/migration/V4_add_created_at.sql" value="d2d7e43c-e90f-4230-8737-0bf948ac35d4" />
+  </component>
+</project>
